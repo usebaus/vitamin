@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vitamin Takip Uygulaması</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f4f4f4; }
+    h1 { text-align: center; }
+    .vitamin { background: white; padding: 10px; margin: 10px 0; border-radius: 8px; }
+    .taken { text-decoration: line-through; color: green; }
+  </style>
+</head>
+<body>
+
+<h1>Vitamin Takip</h1>
+
+<form id="vitaminForm">
+  <input type="text" id="name" placeholder="Vitamin adı" required>
+  <input type="time" id="time">
+  <button type="submit">Ekle</button>
+</form>
+
+<div id="vitaminList"></div>
+
+<script>
+  let vitamins = JSON.parse(localStorage.getItem('vitamins') || '[]');
+
+  function save() {
+    localStorage.setItem('vitamins', JSON.stringify(vitamins));
+  }
+
+  function render() {
+    const container = document.getElementById('vitaminList');
+    container.innerHTML = '';
+    vitamins.forEach((v, i) => {
+      const div = document.createElement('div');
+      div.className = 'vitamin' + (v.takenToday ? ' taken' : '');
+      div.innerHTML = `
+        <strong>${v.name}</strong> - ${v.time || 'Zaman belirtilmedi'}
+        <br>
+        <label>
+          <input type="checkbox" ${v.takenToday ? 'checked' : ''} onchange="toggleTaken(${i})"> Bugün alındı
+        </label>
+        <button onclick="deleteVitamin(${i})">Sil</button>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function toggleTaken(index) {
+    vitamins[index].takenToday = !vitamins[index].takenToday;
+    save();
+    render();
+  }
+
+  function deleteVitamin(index) {
+    vitamins.splice(index, 1);
+    save();
+    render();
+  }
+
+  document.getElementById('vitaminForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = document.getElementById('name').value.trim();
+    const time = document.getElementById('time').value;
+    if (name) {
+      vitamins.push({ name, time, takenToday: false });
+      save();
+      render();
+      e.target.reset();
+    }
+  });
+
+  render();
+</script>
+
+</body>
+</html>
